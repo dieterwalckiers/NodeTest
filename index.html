@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Hello from Chattr</title>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="/jquery/jquery.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            init();
+        });
+
+        init = function() {
+            var server = io.connect("http://localhost:8080");
+
+            server.on("connect", function(data) {
+                $("#status").html("Connected to chattr");
+                nickname = prompt("What is your nickname?");
+                server.emit("join", nickname);
+            });
+
+            server.on("messages", function(data) {
+                insertMessage(data);
+            });
+
+            server.on("add chatter", function(name) {
+                var chatter = $("<li data-name='" + name + "'>" + name + "</li>");
+                $("#chatters").append(chatter);
+ 
+            });
+
+            server.on("remove chatter", function(name) {
+                $("#chatters li[data-name='" + name + "']").remove();
+            });
+
+            $("#chat_form").submit(function(e) {
+                var message = $("#chat_input").val();
+                server.emit("messages", message);
+                return false;
+            });
+        }
+
+        insertMessage = function(data) {
+            $("#chat_window").html($("#chat_window").html() + data + "<br/>");
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Chattr</h1>
+    <ul id="chatters" style="width: 150px; height: 150px; border: 1px solid black;">
+    </ul>
+    <div id="chat_window" style="width: 800px; height: 500px; border: 1px solid black;">
+    </div>
+    <form id="chat_form">
+        <input id="chat_input" type="text" />
+        <input type="submit" value="Post" />
+    </form>
+    status: <span id="status"></span>
+</body>
+
+</html>
